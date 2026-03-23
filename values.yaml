@@ -70,7 +70,8 @@ images:
     tag: "15"
     pullPolicy: IfNotPresent
   mongodb:
-    repository: index.docker.io/library/mongo:latest
+    repository: mongo
+    tag: "latest"
     pullPolicy: IfNotPresent
 
 # ─── API Keys (REQUIRED - fill before deploying) ─────────────
@@ -93,6 +94,19 @@ env:
 
   # MongoDB
   mongoUri: "mongodb://insurance-mongodb:27017"
+
+# ─── Advisor / Retriever Config ───────────────────────────────
+advisorConfig:
+  textEmbedPort: "http://retail-shopping-assistant-embedqa-1:8000/v1"
+  textModelName: "nvidia/nv-embedqa-e5-v5"
+  imageEmbedPort: "http://nvclip:8000/v1"
+  imageModelName: "nvidia/nvclip"
+  dbPort: "http://milvus:19530"
+  dbName: "shopping_advisor_db"
+  simThreshold: "0.2"
+  textCollection: "shopping_advisor_text_db"
+  imageCollection: "shopping_advisor_image_db"
+  dataSource: "/app/shared/data/expanded_insurance_faq.csv"
 
 # ─── OpenShift Route ──────────────────────────────────────────
 route:

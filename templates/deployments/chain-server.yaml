@@ -25,6 +25,9 @@ spec:
         ports:
         - containerPort: 8009
           name: http
+        envFrom:
+        - configMapRef:
+            name: {{ include "insurance-chat-assistant.fullname" . }}-advisor-config
         env:
         - name: LLM_API_KEY
           valueFrom:

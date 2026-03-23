@@ -25,6 +25,9 @@ spec:
         ports:
         - containerPort: 8011
           name: http
+        envFrom:
+        - configMapRef:
+            name: {{ include "insurance-chat-assistant.fullname" . }}-advisor-config
         env:
         - name: MILVUS_HOST
           value: "{{ include "insurance-chat-assistant.fullname" . }}-milvus"
