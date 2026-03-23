@@ -10,7 +10,7 @@ data:
   TEXT_MODEL_NAME: {{ .Values.advisorConfig.textModelName | quote }}
   IMAGE_EMBED_PORT: {{ .Values.advisorConfig.imageEmbedPort | quote }}
   IMAGE_MODEL_NAME: {{ .Values.advisorConfig.imageModelName | quote }}
-  DB_PORT: "{{ include "insurance-chat-assistant.fullname" . }}-milvus:19530"
+  DB_PORT: "http://{{ include "insurance-chat-assistant.fullname" . }}-milvus:19530"
   DB_NAME: {{ .Values.advisorConfig.dbName | quote }}
   SIM_THRESHOLD: {{ .Values.advisorConfig.simThreshold | quote }}
   TEXT_COLLECTION: {{ .Values.advisorConfig.textCollection | quote }}
@@ -22,7 +22,7 @@ data:
     text_model_name: {{ .Values.advisorConfig.textModelName | quote }}
     image_embed_port: {{ .Values.advisorConfig.imageEmbedPort | quote }}
     image_model_name: {{ .Values.advisorConfig.imageModelName | quote }}
-    db_port: "{{ include "insurance-chat-assistant.fullname" . }}-milvus:19530"
+    db_port: "http://{{ include "insurance-chat-assistant.fullname" . }}-milvus:19530"
     db_name: {{ .Values.advisorConfig.dbName | quote }}
     sim_threshold: {{ .Values.advisorConfig.simThreshold }}
     text_collection: {{ .Values.advisorConfig.textCollection | quote }}
