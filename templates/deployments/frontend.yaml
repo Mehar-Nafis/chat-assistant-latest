@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-frontend
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: {{ .Values.deployment.replicas.frontend }}
+  selector:
+    matchLabels:
+      {{- include "insurance-chat-assistant.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      labels:
+        {{- include "insurance-chat-assistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+    spec:
+      {{- include "insurance-chat-assistant.podSecurityContext" . | nindent 6 }}
+      containers:
+      - name: frontend
+        image: {{ include "insurance-chat-assistant.image" .Values.images.frontend }}
+        imagePullPolicy: {{ .Values.images.frontend.pullPolicy }}
+        ports:
+        - containerPort: 3000
+          name: http
+        resources:
+          {{- toYaml .Values.resources.frontend | nindent 10 }}
+        {{- include "insurance-chat-assistant.securityContext" . | nindent 8 }}

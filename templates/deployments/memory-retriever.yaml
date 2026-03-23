@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-memory-retriever
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: memory-retriever
+spec:
+  replicas: {{ .Values.deployment.replicas.memoryRetriever }}
+  selector:
+    matchLabels:
+      {{- include "insurance-chat-assistant.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: memory-retriever
+  template:
+    metadata:
+      labels:
+        {{- include "insurance-chat-assistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: memory-retriever
+    spec:
+      {{- include "insurance-chat-assistant.podSecurityContext" . | nindent 6 }}
+      containers:
+      - name: memory-retriever
+        image: {{ include "insurance-chat-assistant.image" .Values.images.memoryRetriever }}
+        imagePullPolicy: {{ .Values.images.memoryRetriever.pullPolicy }}
+        ports:
+        - containerPort: 8011
+          name: http
+        env:
+        - name: MILVUS_HOST
+          value: "{{ include "insurance-chat-assistant.fullname" . }}-milvus"
+        - name: MILVUS_PORT
+          value: "19530"
+        resources:
+          {{- toYaml .Values.resources.memoryRetriever | nindent 10 }}
+        {{- include "insurance-chat-assistant.securityContext" . | nindent 8 }}

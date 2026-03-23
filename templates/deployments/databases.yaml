@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-postgres
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "insurance-chat-assistant.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: postgres
+  template:
+    metadata:
+      labels:
+        {{- include "insurance-chat-assistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: postgres
+    spec:
+      {{- include "insurance-chat-assistant.podSecurityContext" . | nindent 6 }}
+      containers:
+      - name: postgres
+        image: {{ include "insurance-chat-assistant.image" .Values.images.postgres }}
+        imagePullPolicy: {{ .Values.images.postgres.pullPolicy }}
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "insurance-chat-assistant.postgresSecretName" . }}
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "insurance-chat-assistant.postgresSecretName" . }}
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "insurance-chat-assistant.postgresSecretName" . }}
+              key: POSTGRES_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        - name: init-sql
+          mountPath: /docker-entrypoint-initdb.d
+        readinessProbe:
+          exec:
+            command: ["pg_isready", "-U", {{ .Values.env.postgresUser | quote }}]
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 6
+        resources:
+          {{- toYaml .Values.resources.postgres | nindent 10 }}
+        {{- include "insurance-chat-assistant.securityContext" . | nindent 8 }}
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: {{ include "insurance-chat-assistant.fullname" . }}-postgres-data
+      - name: init-sql
+        configMap:
+          name: {{ include "insurance-chat-assistant.fullname" . }}-init-sql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-mongodb
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "insurance-chat-assistant.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: mongodb
+  template:
+    metadata:
+      labels:
+        {{- include "insurance-chat-assistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: mongodb
+    spec:
+      {{- include "insurance-chat-assistant.podSecurityContext" . | nindent 6 }}
+      containers:
+      - name: mongodb
+        image: {{ include "insurance-chat-assistant.image" .Values.images.mongodb }}
+        imagePullPolicy: {{ .Values.images.mongodb.pullPolicy }}
+        ports:
+        - containerPort: 27017
+          name: mongo
+        volumeMounts:
+        - name: mongo-data
+          mountPath: /data/db
+        readinessProbe:
+          exec:
+            command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 6
+        resources:
+          {{- toYaml .Values.resources.mongodb | nindent 10 }}
+        {{- include "insurance-chat-assistant.securityContext" . | nindent 8 }}
+      volumes:
+      - name: mongo-data
+        persistentVolumeClaim:
+          claimName: {{ include "insurance-chat-assistant.fullname" . }}-mongo-data

@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-catalog-retriever
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: catalog-retriever
+spec:
+  replicas: {{ .Values.deployment.replicas.catalogRetriever }}
+  selector:
+    matchLabels:
+      {{- include "insurance-chat-assistant.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: catalog-retriever
+  template:
+    metadata:
+      labels:
+        {{- include "insurance-chat-assistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: catalog-retriever
+    spec:
+      {{- include "insurance-chat-assistant.podSecurityContext" . | nindent 6 }}
+      containers:
+      - name: catalog-retriever
+        image: {{ include "insurance-chat-assistant.image" .Values.images.catalogRetriever }}
+        imagePullPolicy: {{ .Values.images.catalogRetriever.pullPolicy }}
+        ports:
+        - containerPort: 8010
+          name: http
+        env:
+        - name: EMBED_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "insurance-chat-assistant.secretName" . }}
+              key: EMBED_API_KEY
+        - name: MILVUS_HOST
+          value: "{{ include "insurance-chat-assistant.fullname" . }}-milvus"
+        - name: MILVUS_PORT
+          value: "19530"
+        {{- if .Values.env.configOverride }}
+        - name: CONFIG_OVERRIDE
+          value: {{ .Values.env.configOverride | quote }}
+        {{- end }}
+        {{- if .Values.healthChecks.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: {{ .Values.healthChecks.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthChecks.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.healthChecks.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.healthChecks.livenessProbe.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: {{ .Values.healthChecks.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthChecks.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.healthChecks.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.healthChecks.readinessProbe.failureThreshold }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources.catalogRetriever | nindent 10 }}
+        {{- include "insurance-chat-assistant.securityContext" . | nindent 8 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

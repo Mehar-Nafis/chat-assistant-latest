@@ -1,0 +1,28 @@
+# OpenShift-specific overrides for Insurance Chat Assistant
+
+platform:
+  type: "openshift"
+
+# Use OpenShift Routes instead of Ingress
+ingress:
+  enabled: false
+
+route:
+  enabled: true
+  host: "" # Set this to your desired hostname or leave empty for auto-generation
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+# OpenShift-compatible security contexts (assigned by SCC)
+securityContext: {}
+podSecurityContext: {}
+
+# Persistence overrides for OpenShift
+persistence:
+  storageClass: "gp2" # Update this to your cluster's storage class (e.g., "thin", "ocs-storagecluster-ceph-rbd")
+
+# Service types for OpenShift (internal services use ClusterIP)
+services:
+  nginx:
+    type: ClusterIP # Exposed via Route

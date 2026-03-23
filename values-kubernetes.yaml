@@ -1,0 +1,32 @@
+# Kubernetes-specific values
+platform:
+  type: "kubernetes"
+
+# Use Ingress for Kubernetes
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: retail-assistant.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+route:
+  enabled: false
+
+# Standard Kubernetes security contexts
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+podSecurityContext:
+  fsGroup: 1000
+
+# Service types for Kubernetes
+services:
+  nginx:
+    type: LoadBalancer

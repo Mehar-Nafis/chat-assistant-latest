@@ -1,0 +1,316 @@
+# ============================================================
+# Insurance Chat Assistant — Helm Values for OpenShift
+# Image repo: lakshmilavanya2001/insurance-chat-assistant
+# ============================================================
+
+# Platform selection
+platform:
+  type: "openshift"   # "openshift" | "kubernetes"
+
+# ─── Image Configuration ─────────────────────────────────────
+# All app images live at:  docker.io/lakshmilavanya2001/insurance-chat-assistant:<tag>
+# Each service uses a different tag (matching the pushed image tags).
+images:
+  chainServer:
+    repository: lakshmilavanya2001/insurance-chat-assistant
+    tag: chain-server
+    pullPolicy: Always
+  catalogRetriever:
+    repository: lakshmilavanya2001/insurance-chat-assistant
+    tag: catalog-retriever
+    pullPolicy: Always
+  memoryRetriever:
+    repository: lakshmilavanya2001/insurance-chat-assistant
+    tag: memory-retriever
+    pullPolicy: Always
+  rails:
+    repository: lakshmilavanya2001/insurance-chat-assistant
+    tag: rails
+    pullPolicy: Always
+  frontend:
+    repository: lakshmilavanya2001/insurance-chat-assistant
+    tag: frontend
+    pullPolicy: Always
+  speechService:
+    repository: lakshmilavanya2001/insurance-chat-assistant
+    tag: speech-service
+    pullPolicy: Always
+  userManagement:
+    repository: lakshmilavanya2001/insurance-chat-assistant
+    tag: user-management
+    pullPolicy: Always
+  notificationAgent:
+    repository: lakshmilavanya2001/insurance-chat-assistant
+    tag: notification-agent
+    pullPolicy: Always
+  textToSqlAgent:
+    repository: lakshmilavanya2001/insurance-chat-assistant
+    tag: text-to-sql-agent
+    pullPolicy: Always
+
+  # Third-party images (from public registries)
+  nginx:
+    repository: nginx
+    tag: 1.25.3-alpine
+    pullPolicy: IfNotPresent
+  milvus:
+    repository: milvusdb/milvus
+    tag: v2.4.13-hotfix
+    pullPolicy: IfNotPresent
+  etcd:
+    repository: quay.io/coreos/etcd
+    tag: v3.5.5
+    pullPolicy: IfNotPresent
+  minio:
+    repository: minio/minio
+    tag: RELEASE.2023-03-20T20-16-18Z
+    pullPolicy: IfNotPresent
+  postgres:
+    repository: postgres
+    tag: "15"
+    pullPolicy: IfNotPresent
+  mongodb:
+    repository: mongo
+    tag: "6.0"
+    pullPolicy: IfNotPresent
+
+# ─── API Keys (REQUIRED - fill before deploying) ─────────────
+env:
+  llmApiKey: ""          # NVIDIA NIM LLM API key
+  embedApiKey: ""        # NVIDIA NIM embedding API key
+  railApiKey: ""         # NeMo Guardrails API key
+  configOverride: ""     # Optional config override filename
+
+  # Milvus / MinIO internal config (no need to change)
+  milvusHost: "milvus"
+  milvusPort: "19530"
+  minioAccessKey: "minioadmin"
+  minioSecretKey: "minioadmin"
+
+  # PostgreSQL
+  postgresDb: "insurance_db"
+  postgresUser: "insurance_user"
+  postgresPassword: "insurance_password"
+
+  # MongoDB
+  mongoUri: "mongodb://insurance-mongodb:27017"
+
+# ─── OpenShift Route ──────────────────────────────────────────
+route:
+  enabled: true
+  host: ""   # Leave empty for auto-generated host, or set e.g. "insurance-assistant.apps.mycluster.com"
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+# ─── Standard Ingress (disabled on OpenShift) ────────────────
+ingress:
+  enabled: false
+
+# ─── Service Types ────────────────────────────────────────────
+services:
+  chainServer:
+    type: ClusterIP
+    port: 8009
+  catalogRetriever:
+    type: ClusterIP
+    port: 8010
+  memoryRetriever:
+    type: ClusterIP
+    port: 8011
+  rails:
+    type: ClusterIP
+    port: 8012
+  speechService:
+    type: ClusterIP
+    port: 8013
+  userManagement:
+    type: ClusterIP
+    port: 8014
+  notificationAgent:
+    type: ClusterIP
+    port: 8015
+  textToSqlAgent:
+    type: ClusterIP
+    port: 8017
+  frontend:
+    type: ClusterIP
+    port: 3000
+  nginx:
+    type: ClusterIP   # OpenShift exposes via Route
+    port: 80
+  milvus:
+    type: ClusterIP
+    grpcPort: 19530
+    httpPort: 9091
+  etcd:
+    type: ClusterIP
+    port: 2379
+  minio:
+    type: ClusterIP
+    apiPort: 9000
+    consolePort: 9001
+  postgres:
+    type: ClusterIP
+    port: 5432
+  mongodb:
+    type: ClusterIP
+    port: 27017
+
+# ─── Replica Counts ───────────────────────────────────────────
+deployment:
+  replicas:
+    chainServer: 1
+    catalogRetriever: 1
+    memoryRetriever: 1
+    rails: 1
+    frontend: 1
+    nginx: 1
+    userManagement: 1
+    notificationAgent: 1
+    textToSqlAgent: 1
+    milvus: 1
+    etcd: 1
+    minio: 1
+    postgres: 1
+    mongodb: 1
+
+# ─── Resource Limits ──────────────────────────────────────────
+resources:
+  chainServer:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  catalogRetriever:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  memoryRetriever:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  rails:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  frontend:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  nginx:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  userManagement:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  notificationAgent:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  textToSqlAgent:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  milvus:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+  etcd:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  minio:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  postgres:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  mongodb:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+# ─── Persistence ──────────────────────────────────────────────
+persistence:
+  storageClass: ""   # Set to your OpenShift StorageClass e.g. "gp2" or "ocs-storagecluster-ceph-rbd"
+
+  milvusData:
+    size: 20Gi
+  minioData:
+    size: 10Gi
+  etcdData:
+    size: 5Gi
+  postgresData:
+    size: 10Gi
+  mongoData:
+    size: 5Gi
+
+# ─── Health Checks ────────────────────────────────────────────
+healthChecks:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# ─── Node Selector / Tolerations / Affinity ───────────────────
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# ─── OpenShift SCC (Security Context Constraints) ─────────────
+# OpenShift assigns UIDs automatically — do NOT hardcode runAsUser.
+securityContext: {}
+podSecurityContext: {}

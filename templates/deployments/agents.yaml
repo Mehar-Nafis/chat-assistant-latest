@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-notification-agent
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: notification-agent
+spec:
+  replicas: {{ .Values.deployment.replicas.notificationAgent }}
+  selector:
+    matchLabels:
+      {{- include "insurance-chat-assistant.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: notification-agent
+  template:
+    metadata:
+      labels:
+        {{- include "insurance-chat-assistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: notification-agent
+    spec:
+      {{- include "insurance-chat-assistant.podSecurityContext" . | nindent 6 }}
+      containers:
+      - name: notification-agent
+        image: {{ include "insurance-chat-assistant.image" .Values.images.notificationAgent }}
+        imagePullPolicy: {{ .Values.images.notificationAgent.pullPolicy }}
+        ports:
+        - containerPort: 8015
+          name: http
+        resources:
+          {{- toYaml .Values.resources.notificationAgent | nindent 10 }}
+        {{- include "insurance-chat-assistant.securityContext" . | nindent 8 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-text-to-sql-agent
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: text-to-sql-agent
+spec:
+  replicas: {{ .Values.deployment.replicas.textToSqlAgent }}
+  selector:
+    matchLabels:
+      {{- include "insurance-chat-assistant.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: text-to-sql-agent
+  template:
+    metadata:
+      labels:
+        {{- include "insurance-chat-assistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: text-to-sql-agent
+    spec:
+      {{- include "insurance-chat-assistant.podSecurityContext" . | nindent 6 }}
+      containers:
+      - name: text-to-sql-agent
+        image: {{ include "insurance-chat-assistant.image" .Values.images.textToSqlAgent }}
+        imagePullPolicy: {{ .Values.images.textToSqlAgent.pullPolicy }}
+        ports:
+        - containerPort: 8017
+          name: http
+        env:
+        - name: LLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "insurance-chat-assistant.secretName" . }}
+              key: LLM_API_KEY
+        - name: POSTGRES_URI
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "insurance-chat-assistant.postgresSecretName" . }}
+              key: POSTGRES_URI
+        resources:
+          {{- toYaml .Values.resources.textToSqlAgent | nindent 10 }}
+        {{- include "insurance-chat-assistant.securityContext" . | nindent 8 }}

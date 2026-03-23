@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-user-management
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: user-management
+spec:
+  replicas: {{ .Values.deployment.replicas.userManagement }}
+  selector:
+    matchLabels:
+      {{- include "insurance-chat-assistant.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: user-management
+  template:
+    metadata:
+      labels:
+        {{- include "insurance-chat-assistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: user-management
+    spec:
+      {{- include "insurance-chat-assistant.podSecurityContext" . | nindent 6 }}
+      containers:
+      - name: user-management
+        image: {{ include "insurance-chat-assistant.image" .Values.images.userManagement }}
+        imagePullPolicy: {{ .Values.images.userManagement.pullPolicy }}
+        ports:
+        - containerPort: 8014
+          name: http
+        env:
+        - name: MONGO_URI
+          value: "mongodb://{{ include "insurance-chat-assistant.fullname" . }}-mongodb:27017"
+        - name: POSTGRES_URI
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "insurance-chat-assistant.postgresSecretName" . }}
+              key: POSTGRES_URI
+        {{- if .Values.healthChecks.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: {{ .Values.healthChecks.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthChecks.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.healthChecks.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.healthChecks.livenessProbe.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: {{ .Values.healthChecks.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthChecks.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.healthChecks.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.healthChecks.readinessProbe.failureThreshold }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources.userManagement | nindent 10 }}
+        {{- include "insurance-chat-assistant.securityContext" . | nindent 8 }}

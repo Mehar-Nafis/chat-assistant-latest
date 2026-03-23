@@ -1,0 +1,88 @@
+{{- $initSql := .Files.Get "files/init_db.sql" -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-init-sql
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+data:
+  init_db.sql: |
+    -- Initialize insurance database with all required tables
+
+    CREATE SCHEMA IF NOT EXISTS insurance;
+
+    -- Policies table
+    CREATE TABLE IF NOT EXISTS insurance.policies (
+        policy_id TEXT PRIMARY KEY,
+        policy_type TEXT NOT NULL,
+        insurer TEXT NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- User policies table
+    CREATE TABLE IF NOT EXISTS insurance.user_policies (
+        user_id TEXT NOT NULL,
+        policy_id TEXT NOT NULL,
+        role TEXT DEFAULT 'PRIMARY',
+        start_date DATE,
+        end_date DATE,
+        PRIMARY KEY (user_id, policy_id),
+        FOREIGN KEY (policy_id) REFERENCES insurance.policies(policy_id)
+    );
+
+    -- Claims table
+    CREATE TABLE IF NOT EXISTS insurance.claims (
+        claim_id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        policy_id TEXT,
+        claim_amount DECIMAL(10,2),
+        claim_reason VARCHAR(200),
+        claim_date DATE,
+        status VARCHAR(20),
+        FOREIGN KEY (policy_id) REFERENCES insurance.policies(policy_id)
+    );
+
+    -- Claim events table
+    CREATE TABLE IF NOT EXISTS insurance.claim_events (
+        event_id SERIAL PRIMARY KEY,
+        claim_id TEXT NOT NULL,
+        event_type TEXT,
+        event_note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (claim_id) REFERENCES insurance.claims(claim_id)
+    );
+
+    -- Sample policies
+    INSERT INTO insurance.policies (policy_id, policy_type, insurer, is_active) VALUES
+    ('CAR-ABC-2025-000101', 'CAR', 'State Farm', TRUE),
+    ('HLTH-ABC-2025-000202', 'HEALTH', 'Blue Cross', TRUE),
+    ('HOME-ABC-2025-000303', 'HOME', 'Allstate', TRUE),
+    ('POL004', 'CAR', 'Geico', TRUE)
+    ON CONFLICT DO NOTHING;
+
+    -- Sample user policies
+    INSERT INTO insurance.user_policies (user_id, policy_id, role, start_date, end_date) VALUES
+    ('user101', 'CAR-ABC-2025-000101', 'PRIMARY', '2025-04-15', '2026-04-14'),
+    ('user202', 'HLTH-ABC-2025-000202', 'PRIMARY', '2025-01-01', '2025-12-31'),
+    ('user303', 'HOME-ABC-2025-000303', 'PRIMARY', '2025-03-20', '2026-03-19')
+    ON CONFLICT DO NOTHING;
+
+    -- Sample claims
+    INSERT INTO insurance.claims (claim_id, user_id, policy_id, claim_amount, claim_reason, claim_date, status) VALUES
+    ('CLM001', 'user101', 'CAR-ABC-2025-000101', 2500.00, 'Car accident repair', '2024-03-15', 'Approved'),
+    ('CLM002', 'user101', 'CAR-ABC-2025-000101', 800.00, 'Windshield replacement', '2024-06-20', 'Paid'),
+    ('CLM003', 'user202', 'HLTH-ABC-2025-000202', 1500.00, 'Emergency room visit', '2024-02-10', 'Approved'),
+    ('CLM004', 'user303', 'HOME-ABC-2025-000303', 5000.00, 'Water damage repair', '2024-04-05', 'Processing')
+    ON CONFLICT DO NOTHING;
+
+    -- Sample claim events
+    INSERT INTO insurance.claim_events (claim_id, event_type, event_note) VALUES
+    ('CLM001', 'SUBMITTED', 'Claim submitted with photos'),
+    ('CLM001', 'REVIEWED', 'Reviewed by adjuster'),
+    ('CLM001', 'APPROVED', 'Approved for payment'),
+    ('CLM002', 'SUBMITTED', 'Windshield claim submitted'),
+    ('CLM002', 'APPROVED', 'Approved and paid'),
+    ('CLM003', 'SUBMITTED', 'Emergency room claim'),
+    ('CLM003', 'APPROVED', 'Medical claim approved'),
+    ('CLM004', 'SUBMITTED', 'Water damage claim with documentation');

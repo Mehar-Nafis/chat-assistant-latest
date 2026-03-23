@@ -1,0 +1,31 @@
+# Local NIM deployment values (requires GPUs)
+deployment:
+  enableLocalNIM: true
+  enableCloudNIM: false
+
+# GPU node selector and tolerations
+nodeSelector:
+  nvidia.com/gpu.present: "true"
+
+tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
+
+# Enable NIM cache persistence
+persistence:
+  nimCache:
+    enabled: true
+    size: 100Gi
+
+# NIM-specific resource requirements
+resources:
+  llama:
+    limits:
+      cpu: 8000m
+      memory: 32Gi
+      nvidia.com/gpu: 2
+    requests:
+      cpu: 4000m
+      memory: 16Gi
+      nvidia.com/gpu: 2

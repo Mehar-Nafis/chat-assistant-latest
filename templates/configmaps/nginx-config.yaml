@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-nginx-config
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+data:
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        upstream frontend {
+            server {{ include "insurance-chat-assistant.fullname" . }}-frontend:3000;
+        }
+
+        upstream backend {
+            server {{ include "insurance-chat-assistant.fullname" . }}-chain-server:8009;
+        }
+
+        server {
+            # OpenShift requires non-root ports (>1024)
+            listen 8080;
+
+            # Frontend (includes WebSocket support)
+            location / {
+                proxy_pass http://frontend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+            }
+
+            # Backend API with SSE streaming support
+            location /api/ {
+                proxy_pass http://backend/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_buffering off;
+                proxy_cache off;
+                proxy_read_timeout 300s;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+            }
+
+            # Speech Service API
+            location /api/speech/ {
+                proxy_pass http://{{ include "insurance-chat-assistant.fullname" . }}-speech-service:8013/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # User Management API
+            location /api/users/ {
+                proxy_pass http://{{ include "insurance-chat-assistant.fullname" . }}-user-management:8014/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # Notification Agent — email confirmation link
+            location /confirm {
+                proxy_pass http://{{ include "insurance-chat-assistant.fullname" . }}-notification-agent:8015/confirm;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # Password Reset Page
+            location /reset-password {
+                proxy_pass http://{{ include "insurance-chat-assistant.fullname" . }}-notification-agent:8015/reset-password;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+        }
+    }

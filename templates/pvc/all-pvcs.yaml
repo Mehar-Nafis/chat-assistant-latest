@@ -1,0 +1,76 @@
+{{/* PersistentVolumeClaims for all stateful services */}}
+
+# Milvus Data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-milvus-data
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  {{- include "insurance-chat-assistant.storageClass" . | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.milvusData.size }}
+---
+# MinIO Data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-minio-data
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  {{- include "insurance-chat-assistant.storageClass" . | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.minioData.size }}
+---
+# etcd Data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-etcd-data
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  {{- include "insurance-chat-assistant.storageClass" . | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.etcdData.size }}
+---
+# PostgreSQL Data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-postgres-data
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  {{- include "insurance-chat-assistant.storageClass" . | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.postgresData.size }}
+---
+# MongoDB Data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-mongo-data
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  {{- include "insurance-chat-assistant.storageClass" . | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.mongoData.size }}

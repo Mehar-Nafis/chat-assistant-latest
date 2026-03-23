@@ -1,0 +1,259 @@
+{{/* All Kubernetes Services for the Insurance Chat Assistant */}}
+
+# Chain Server
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-chain-server
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: chain-server
+spec:
+  type: {{ .Values.services.chainServer.type }}
+  ports:
+  - port: {{ .Values.services.chainServer.port }}
+    targetPort: http
+    name: http
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: chain-server
+---
+# Catalog Retriever
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-catalog-retriever
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: catalog-retriever
+spec:
+  type: {{ .Values.services.catalogRetriever.type }}
+  ports:
+  - port: {{ .Values.services.catalogRetriever.port }}
+    targetPort: http
+    name: http
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: catalog-retriever
+---
+# Memory Retriever
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-memory-retriever
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: memory-retriever
+spec:
+  type: {{ .Values.services.memoryRetriever.type }}
+  ports:
+  - port: {{ .Values.services.memoryRetriever.port }}
+    targetPort: http
+    name: http
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: memory-retriever
+---
+# Rails (Guardrails)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-rails
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rails
+spec:
+  type: {{ .Values.services.rails.type }}
+  ports:
+  - port: {{ .Values.services.rails.port }}
+    targetPort: http
+    name: http
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: rails
+---
+# Frontend
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-frontend
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  type: {{ .Values.services.frontend.type }}
+  ports:
+  - port: {{ .Values.services.frontend.port }}
+    targetPort: http
+    name: http
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+---
+# Nginx (entry point - routes to frontend and chain-server)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-nginx
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: nginx
+spec:
+  type: {{ .Values.services.nginx.type }}
+  ports:
+  - port: 80
+    targetPort: 8080
+    name: http
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: nginx
+---
+# User Management
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-user-management
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: user-management
+spec:
+  type: {{ .Values.services.userManagement.type }}
+  ports:
+  - port: {{ .Values.services.userManagement.port }}
+    targetPort: http
+    name: http
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: user-management
+---
+# Notification Agent
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-notification-agent
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: notification-agent
+spec:
+  type: {{ .Values.services.notificationAgent.type }}
+  ports:
+  - port: {{ .Values.services.notificationAgent.port }}
+    targetPort: http
+    name: http
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: notification-agent
+---
+# Text-to-SQL Agent
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-text-to-sql-agent
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: text-to-sql-agent
+spec:
+  type: {{ .Values.services.textToSqlAgent.type }}
+  ports:
+  - port: {{ .Values.services.textToSqlAgent.port }}
+    targetPort: http
+    name: http
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: text-to-sql-agent
+---
+# PostgreSQL
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-postgres
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  type: {{ .Values.services.postgres.type }}
+  ports:
+  - port: {{ .Values.services.postgres.port }}
+    targetPort: postgres
+    name: postgres
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+---
+# MongoDB
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-mongodb
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb
+spec:
+  type: {{ .Values.services.mongodb.type }}
+  ports:
+  - port: {{ .Values.services.mongodb.port }}
+    targetPort: mongo
+    name: mongo
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb
+---
+# Etcd
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-etcd
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: etcd
+spec:
+  type: {{ .Values.services.etcd.type }}
+  ports:
+  - port: {{ .Values.services.etcd.port }}
+    targetPort: client
+    name: client
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: etcd
+---
+# MinIO
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-minio
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: minio
+spec:
+  type: {{ .Values.services.minio.type }}
+  ports:
+  - port: {{ .Values.services.minio.apiPort }}
+    targetPort: api
+    name: api
+  - port: {{ .Values.services.minio.consolePort }}
+    targetPort: console
+    name: console
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: minio
+---
+# Milvus
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-milvus
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: milvus
+spec:
+  type: {{ .Values.services.milvus.type }}
+  ports:
+  - port: {{ .Values.services.milvus.grpcPort }}
+    targetPort: grpc
+    name: grpc
+  - port: {{ .Values.services.milvus.httpPort }}
+    targetPort: http
+    name: http
+  selector:
+    {{- include "insurance-chat-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: milvus

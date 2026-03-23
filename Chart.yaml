@@ -1,0 +1,16 @@
+apiVersion: v2
+name: insurance-chat-assistant
+description: AI-powered Insurance Chat Assistant with multi-agent LangGraph architecture
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - ai
+  - insurance
+  - chat
+  - assistant
+  - nvidia
+  - nim
+  - openshift
+maintainers:
+  - name: Insurance Assistant Team

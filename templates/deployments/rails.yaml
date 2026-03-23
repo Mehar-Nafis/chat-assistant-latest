@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "insurance-chat-assistant.fullname" . }}-rails
+  labels:
+    {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rails
+spec:
+  replicas: {{ .Values.deployment.replicas.rails }}
+  selector:
+    matchLabels:
+      {{- include "insurance-chat-assistant.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: rails
+  template:
+    metadata:
+      labels:
+        {{- include "insurance-chat-assistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: rails
+    spec:
+      {{- include "insurance-chat-assistant.podSecurityContext" . | nindent 6 }}
+      containers:
+      - name: rails
+        image: {{ include "insurance-chat-assistant.image" .Values.images.rails }}
+        imagePullPolicy: {{ .Values.images.rails.pullPolicy }}
+        ports:
+        - containerPort: 8012
+          name: http
+        env:
+        - name: NVIDIA_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "insurance-chat-assistant.secretName" . }}
+              key: RAIL_API_KEY
+        {{- if .Values.env.configOverride }}
+        - name: CONFIG_OVERRIDE
+          value: {{ .Values.env.configOverride | quote }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources.rails | nindent 10 }}
+        {{- include "insurance-chat-assistant.securityContext" . | nindent 8 }}
