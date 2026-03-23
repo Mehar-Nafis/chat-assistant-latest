@@ -70,8 +70,7 @@ images:
     tag: "15"
     pullPolicy: IfNotPresent
   mongodb:
-    repository: mongo
-    tag: "6.0"
+    repository: index.docker.io/library/mongo:latest
     pullPolicy: IfNotPresent
 
 # ─── API Keys (REQUIRED - fill before deploying) ─────────────
