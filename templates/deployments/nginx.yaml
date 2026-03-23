@@ -23,12 +23,14 @@ spec:
         image: {{ include "insurance-chat-assistant.image" .Values.images.nginx }}
         imagePullPolicy: {{ .Values.images.nginx.pullPolicy }}
         ports:
-        - containerPort: 8080
+        - containerPort: 80
           name: http
         volumeMounts:
         - name: nginx-config
           mountPath: /etc/nginx/nginx.conf
           subPath: nginx.conf
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
         resources:
           {{- toYaml .Values.resources.nginx | nindent 10 }}
         {{- include "insurance-chat-assistant.securityContext" . | nindent 8 }}
@@ -36,3 +38,5 @@ spec:
       - name: nginx-config
         configMap:
           name: {{ include "insurance-chat-assistant.fullname" . }}-nginx-config
+      - name: nginx-cache
+        emptyDir: {}
