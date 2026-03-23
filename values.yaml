@@ -70,8 +70,8 @@ images:
     tag: "15"
     pullPolicy: IfNotPresent
   mongodb:
-    repository: mongo
-    tag: "latest"
+    repository: lakshmilavanya2001/insurance-chat-assistant
+    tag: "mongo"
     pullPolicy: IfNotPresent
 
 # ─── API Keys (REQUIRED - fill before deploying) ─────────────
