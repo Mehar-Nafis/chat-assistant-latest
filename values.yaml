@@ -38,7 +38,7 @@ images:
   userManagement:
     repository: lakshmilavanya2001/insurance-chat-assistant
     tag: user-management
-    pullPolicy: AIfNotPresent
+    pullPolicy: IfNotPresent
   notificationAgent:
     repository: lakshmilavanya2001/insurance-chat-assistant
     tag: notification-agent
