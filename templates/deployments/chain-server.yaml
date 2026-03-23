@@ -63,6 +63,17 @@ spec:
         resources:
           {{- toYaml .Values.resources.chainServer | nindent 10 }}
         {{- include "insurance-chat-assistant.securityContext" . | nindent 8 }}
+        volumeMounts:
+        - name: advisor-config-vol
+          mountPath: /app/shared/configs/chain_server
+          readOnly: true
+      volumes:
+      - name: advisor-config-vol
+        configMap:
+          name: {{ include "insurance-chat-assistant.fullname" . }}-advisor-config
+          items:
+          - key: config.yaml
+            path: config.yaml
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

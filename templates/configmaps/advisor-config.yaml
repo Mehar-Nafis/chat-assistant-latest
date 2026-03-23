@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
 data:
+  # Flat env-var keys (kept for backward compat)
   TEXT_EMBED_PORT: {{ .Values.advisorConfig.textEmbedPort | quote }}
   TEXT_MODEL_NAME: {{ .Values.advisorConfig.textModelName | quote }}
   IMAGE_EMBED_PORT: {{ .Values.advisorConfig.imageEmbedPort | quote }}
@@ -15,3 +16,15 @@ data:
   TEXT_COLLECTION: {{ .Values.advisorConfig.textCollection | quote }}
   IMAGE_COLLECTION: {{ .Values.advisorConfig.imageCollection | quote }}
   DATA_SOURCE: {{ .Values.advisorConfig.dataSource | quote }}
+  # File content — mounted into each service at their expected config path
+  config.yaml: |
+    text_embed_port: {{ .Values.advisorConfig.textEmbedPort | quote }}
+    text_model_name: {{ .Values.advisorConfig.textModelName | quote }}
+    image_embed_port: {{ .Values.advisorConfig.imageEmbedPort | quote }}
+    image_model_name: {{ .Values.advisorConfig.imageModelName | quote }}
+    db_port: {{ .Values.advisorConfig.dbPort | quote }}
+    db_name: {{ .Values.advisorConfig.dbName | quote }}
+    sim_threshold: {{ .Values.advisorConfig.simThreshold }}
+    text_collection: {{ .Values.advisorConfig.textCollection | quote }}
+    image_collection: {{ .Values.advisorConfig.imageCollection | quote }}
+    data_source: {{ .Values.advisorConfig.dataSource | quote }}
