@@ -33,6 +33,11 @@ spec:
           value: "{{ include "insurance-chat-assistant.fullname" . }}-milvus"
         - name: MILVUS_PORT
           value: "19530"
+        - name: POSTGRES_URI
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "insurance-chat-assistant.postgresSecretName" . }}
+              key: POSTGRES_URI
         resources:
           {{- toYaml .Values.resources.memoryRetriever | nindent 10 }}
         {{- include "insurance-chat-assistant.securityContext" . | nindent 8 }}
