@@ -1,4 +1,3 @@
-{{- $initSql := .Files.Get "files/init_db.sql" -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,82 +6,259 @@ metadata:
     {{- include "insurance-chat-assistant.labels" . | nindent 4 }}
 data:
   init_db.sql: |
-    -- Initialize insurance database with all required tables
+    --
+    -- PostgreSQL database dump
+    --
 
-    CREATE SCHEMA IF NOT EXISTS insurance;
+    \restrict r883O5qHMlBqDKvVSL8wlDx6rNCZm6BcYbP3om1gw4B0LhUQHmMEHX7NKJPijbW
 
-    -- Policies table
-    CREATE TABLE IF NOT EXISTS insurance.policies (
-        policy_id TEXT PRIMARY KEY,
-        policy_type TEXT NOT NULL,
-        insurer TEXT NOT NULL,
-        is_active BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -- Dumped from database version 15.15 (Debian 15.15-1.pgdg13+1)
+    -- Dumped by pg_dump version 15.15 (Debian 15.15-1.pgdg13+1)
+
+    SET statement_timeout = 0;
+    SET lock_timeout = 0;
+    SET idle_in_transaction_session_timeout = 0;
+    SET client_encoding = 'UTF8';
+    SET standard_conforming_strings = on;
+    SELECT pg_catalog.set_config('search_path', '', false);
+    SET check_function_bodies = false;
+    SET xmloption = content;
+    SET client_min_messages = warning;
+    SET row_security = off;
+
+    --
+    -- Name: insurance; Type: SCHEMA; Schema: -; Owner: insurance_user
+    --
+
+    CREATE SCHEMA insurance;
+
+
+    ALTER SCHEMA insurance OWNER TO insurance_user;
+
+    SET default_tablespace = '';
+
+    SET default_table_access_method = heap;
+
+    --
+    -- Name: claim_events; Type: TABLE; Schema: insurance; Owner: insurance_user
+    --
+
+    CREATE TABLE insurance.claim_events (
+        event_id integer NOT NULL,
+        claim_id text NOT NULL,
+        event_type text,
+        event_note text,
+        created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
     );
 
-    -- User policies table
-    CREATE TABLE IF NOT EXISTS insurance.user_policies (
-        user_id TEXT NOT NULL,
-        policy_id TEXT NOT NULL,
-        role TEXT DEFAULT 'PRIMARY',
-        start_date DATE,
-        end_date DATE,
-        PRIMARY KEY (user_id, policy_id),
-        FOREIGN KEY (policy_id) REFERENCES insurance.policies(policy_id)
+
+    ALTER TABLE insurance.claim_events OWNER TO insurance_user;
+
+    --
+    -- Name: claim_events_event_id_seq; Type: SEQUENCE; Schema: insurance; Owner: insurance_user
+    --
+
+    CREATE SEQUENCE insurance.claim_events_event_id_seq
+        AS integer
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+
+
+    ALTER TABLE insurance.claim_events_event_id_seq OWNER TO insurance_user;
+
+    --
+    -- Name: claim_events_event_id_seq; Type: SEQUENCE OWNED BY; Schema: insurance; Owner: insurance_user
+    --
+
+    ALTER SEQUENCE insurance.claim_events_event_id_seq OWNED BY insurance.claim_events.event_id;
+
+
+    --
+    -- Name: claims; Type: TABLE; Schema: insurance; Owner: insurance_user
+    --
+
+    CREATE TABLE insurance.claims (
+        claim_id text NOT NULL,
+        user_id text NOT NULL,
+        claim_amount numeric(10,2),
+        claim_reason character varying(200),
+        claim_date date,
+        status character varying(20),
+        policy_id text
     );
 
-    -- Claims table
-    CREATE TABLE IF NOT EXISTS insurance.claims (
-        claim_id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        policy_id TEXT,
-        claim_amount DECIMAL(10,2),
-        claim_reason VARCHAR(200),
-        claim_date DATE,
-        status VARCHAR(20),
-        FOREIGN KEY (policy_id) REFERENCES insurance.policies(policy_id)
+
+    ALTER TABLE insurance.claims OWNER TO insurance_user;
+
+    --
+    -- Name: policies; Type: TABLE; Schema: insurance; Owner: insurance_user
+    --
+
+    CREATE TABLE insurance.policies (
+        policy_id text NOT NULL,
+        policy_type text NOT NULL,
+        insurer text NOT NULL,
+        is_active boolean DEFAULT true,
+        created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+        user_id text
     );
 
-    -- Claim events table
-    CREATE TABLE IF NOT EXISTS insurance.claim_events (
-        event_id SERIAL PRIMARY KEY,
-        claim_id TEXT NOT NULL,
-        event_type TEXT,
-        event_note TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (claim_id) REFERENCES insurance.claims(claim_id)
+
+    ALTER TABLE insurance.policies OWNER TO insurance_user;
+
+    --
+    -- Name: user_policies; Type: TABLE; Schema: insurance; Owner: insurance_user
+    --
+
+    CREATE TABLE insurance.user_policies (
+        user_id text NOT NULL,
+        policy_id text NOT NULL,
+        role text DEFAULT 'PRIMARY'::text,
+        start_date date,
+        end_date date
     );
 
-    -- Sample policies
-    INSERT INTO insurance.policies (policy_id, policy_type, insurer, is_active) VALUES
-    ('CAR-ABC-2025-000101', 'CAR', 'State Farm', TRUE),
-    ('HLTH-ABC-2025-000202', 'HEALTH', 'Blue Cross', TRUE),
-    ('HOME-ABC-2025-000303', 'HOME', 'Allstate', TRUE),
-    ('POL004', 'CAR', 'Geico', TRUE)
-    ON CONFLICT DO NOTHING;
 
-    -- Sample user policies
-    INSERT INTO insurance.user_policies (user_id, policy_id, role, start_date, end_date) VALUES
-    ('user101', 'CAR-ABC-2025-000101', 'PRIMARY', '2025-04-15', '2026-04-14'),
-    ('user202', 'HLTH-ABC-2025-000202', 'PRIMARY', '2025-01-01', '2025-12-31'),
-    ('user303', 'HOME-ABC-2025-000303', 'PRIMARY', '2025-03-20', '2026-03-19')
-    ON CONFLICT DO NOTHING;
+    ALTER TABLE insurance.user_policies OWNER TO insurance_user;
 
-    -- Sample claims
-    INSERT INTO insurance.claims (claim_id, user_id, policy_id, claim_amount, claim_reason, claim_date, status) VALUES
-    ('CLM001', 'user101', 'CAR-ABC-2025-000101', 2500.00, 'Car accident repair', '2024-03-15', 'Approved'),
-    ('CLM002', 'user101', 'CAR-ABC-2025-000101', 800.00, 'Windshield replacement', '2024-06-20', 'Paid'),
-    ('CLM003', 'user202', 'HLTH-ABC-2025-000202', 1500.00, 'Emergency room visit', '2024-02-10', 'Approved'),
-    ('CLM004', 'user303', 'HOME-ABC-2025-000303', 5000.00, 'Water damage repair', '2024-04-05', 'Processing')
-    ON CONFLICT DO NOTHING;
+    --
+    -- Name: claim_events event_id; Type: DEFAULT; Schema: insurance; Owner: insurance_user
+    --
 
-    -- Sample claim events
-    INSERT INTO insurance.claim_events (claim_id, event_type, event_note) VALUES
-    ('CLM001', 'SUBMITTED', 'Claim submitted with photos'),
-    ('CLM001', 'REVIEWED', 'Reviewed by adjuster'),
-    ('CLM001', 'APPROVED', 'Approved for payment'),
-    ('CLM002', 'SUBMITTED', 'Windshield claim submitted'),
-    ('CLM002', 'APPROVED', 'Approved and paid'),
-    ('CLM003', 'SUBMITTED', 'Emergency room claim'),
-    ('CLM003', 'APPROVED', 'Medical claim approved'),
-    ('CLM004', 'SUBMITTED', 'Water damage claim with documentation');
+    ALTER TABLE ONLY insurance.claim_events ALTER COLUMN event_id SET DEFAULT nextval('insurance.claim_events_event_id_seq'::regclass);
+
+
+    --
+    -- Data for Name: claim_events; Type: TABLE DATA; Schema: insurance; Owner: insurance_user
+    --
+
+    COPY insurance.claim_events (event_id, claim_id, event_type, event_note, created_at) FROM stdin;
+    1	CLM001	SUBMITTED	Claim submitted with photos	2025-12-30 08:42:46.048627
+    2	CLM001	REVIEWED	Reviewed by adjuster	2025-12-30 08:42:46.048627
+    3	CLM001	APPROVED	Approved for payment	2025-12-30 08:42:46.048627
+    4	CLM002	SUBMITTED	Windshield claim submitted	2025-12-30 08:42:46.048627
+    5	CLM002	APPROVED	Approved and paid	2025-12-30 08:42:46.048627
+    6	CLM003	SUBMITTED	Emergency room claim	2025-12-30 08:42:46.048627
+    7	CLM003	APPROVED	Medical claim approved	2025-12-30 08:42:46.048627
+    8	CLM004	SUBMITTED	Water damage claim with documentation	2025-12-30 08:42:46.048627
+    9	CLM001	SUBMITTED	Claim submitted with photos	2025-12-30 08:45:42.14244
+    10	CLM001	REVIEWED	Reviewed by adjuster	2025-12-30 08:45:42.14244
+    11	CLM001	APPROVED	Approved for payment	2025-12-30 08:45:42.14244
+    12	CLM002	SUBMITTED	Windshield claim submitted	2025-12-30 08:45:42.14244
+    13	CLM002	APPROVED	Approved and paid	2025-12-30 08:45:42.14244
+    14	CLM003	SUBMITTED	Emergency room claim	2025-12-30 08:45:42.14244
+    15	CLM003	APPROVED	Medical claim approved	2025-12-30 08:45:42.14244
+    16	CLM004	SUBMITTED	Water damage claim with documentation	2025-12-30 08:45:42.14244
+    \.
+
+
+    --
+    -- Data for Name: claims; Type: TABLE DATA; Schema: insurance; Owner: insurance_user
+    --
+
+    COPY insurance.claims (claim_id, user_id, claim_amount, claim_reason, claim_date, status, policy_id) FROM stdin;
+    CLM001	user101	2500.00	Car accident repair	2024-03-15	Approved	CAR-ABC-2025-000101
+    CLM002	user101	800.00	Windshield replacement	2024-06-20	Paid	CAR-ABC-2025-000101
+    CLM003	user202	1500.00	Emergency room visit	2024-02-10	Approved	HLTH-ABC-2025-000202
+    CLM004	user303	5000.00	Water damage repair	2024-04-05	Processing	HOME-ABC-2025-000303
+    CLM_TEST_2026	user101	1000.00	Test Claim 2026	2026-01-01	Processing	CAR-ABC-2025-000101
+    \.
+
+
+    --
+    -- Data for Name: policies; Type: TABLE DATA; Schema: insurance; Owner: insurance_user
+    --
+
+    COPY insurance.policies (policy_id, policy_type, insurer, is_active, created_at, user_id) FROM stdin;
+    POL001	CAR	State Farm	t	2025-12-30 08:42:46.046195	\N
+    POL002	HEALTH	Blue Cross	t	2025-12-30 08:42:46.046195	\N
+    POL003	HOME	Allstate	t	2025-12-30 08:42:46.046195	\N
+    POL004	CAR	Geico	t	2025-12-30 08:42:46.046195	\N
+    CAR-ABC-2025-000101	CAR	State Farm	t	2025-12-30 08:46:12.438085	user101
+    HLTH-ABC-2025-000202	HEALTH	Blue Cross	t	2025-12-30 08:46:12.438085	user202
+    HOME-ABC-2025-000303	HOME	Allstate	t	2025-12-30 08:46:12.438085	user303
+    \.
+
+
+    --
+    -- Data for Name: user_policies; Type: TABLE DATA; Schema: insurance; Owner: insurance_user
+    --
+
+    COPY insurance.user_policies (user_id, policy_id, role, start_date, end_date) FROM stdin;
+    user202	POL002	PRIMARY	2025-01-01	2025-12-31
+    user303	POL003	PRIMARY	2025-03-20	2026-03-19
+    user101	POL001	PRIMARY	2025-04-15	2026-04-14
+    \.
+
+
+    --
+    -- Name: claim_events_event_id_seq; Type: SEQUENCE SET; Schema: insurance; Owner: insurance_user
+    --
+
+    SELECT pg_catalog.setval('insurance.claim_events_event_id_seq', 16, true);
+
+
+    --
+    -- Name: claim_events claim_events_pkey; Type: CONSTRAINT; Schema: insurance; Owner: insurance_user
+    --
+
+    ALTER TABLE ONLY insurance.claim_events
+        ADD CONSTRAINT claim_events_pkey PRIMARY KEY (event_id);
+
+
+    --
+    -- Name: claims claims_pkey; Type: CONSTRAINT; Schema: insurance; Owner: insurance_user
+    --
+
+    ALTER TABLE ONLY insurance.claims
+        ADD CONSTRAINT claims_pkey PRIMARY KEY (claim_id);
+
+
+    --
+    -- Name: policies policies_pkey; Type: CONSTRAINT; Schema: insurance; Owner: insurance_user
+    --
+
+    ALTER TABLE ONLY insurance.policies
+        ADD CONSTRAINT policies_pkey PRIMARY KEY (policy_id);
+
+
+    --
+    -- Name: user_policies user_policies_pkey; Type: CONSTRAINT; Schema: insurance; Owner: insurance_user
+    --
+
+    ALTER TABLE ONLY insurance.user_policies
+        ADD CONSTRAINT user_policies_pkey PRIMARY KEY (user_id, policy_id);
+
+
+    --
+    -- Name: claim_events claim_events_claim_id_fkey; Type: FK CONSTRAINT; Schema: insurance; Owner: insurance_user
+    --
+
+    ALTER TABLE ONLY insurance.claim_events
+        ADD CONSTRAINT claim_events_claim_id_fkey FOREIGN KEY (claim_id) REFERENCES insurance.claims(claim_id);
+
+
+    --
+    -- Name: claims fk_claims_policy; Type: FK CONSTRAINT; Schema: insurance; Owner: insurance_user
+    --
+
+    ALTER TABLE ONLY insurance.claims
+        ADD CONSTRAINT fk_claims_policy FOREIGN KEY (policy_id) REFERENCES insurance.policies(policy_id);
+
+
+    --
+    -- Name: user_policies user_policies_policy_id_fkey; Type: FK CONSTRAINT; Schema: insurance; Owner: insurance_user
+    --
+
+    ALTER TABLE ONLY insurance.user_policies
+        ADD CONSTRAINT user_policies_policy_id_fkey FOREIGN KEY (policy_id) REFERENCES insurance.policies(policy_id);
+
+
+    --
+    -- PostgreSQL database dump complete
+    --
+
+    \unrestrict r883O5qHMlBqDKvVSL8wlDx6rNCZm6BcYbP3om1gw4B0LhUQHmMEHX7NKJPijbW
