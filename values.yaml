@@ -14,39 +14,39 @@ images:
   chainServer:
     repository: lakshmilavanya2001/insurance-chat-assistant
     tag: chain-server
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   catalogRetriever:
     repository: lakshmilavanya2001/insurance-chat-assistant
     tag: catalog-retriever
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   memoryRetriever:
     repository: lakshmilavanya2001/insurance-chat-assistant
     tag: memory-retriever
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   rails:
     repository: lakshmilavanya2001/insurance-chat-assistant
     tag: rails
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   frontend:
     repository: lakshmilavanya2001/insurance-chat-assistant
     tag: frontend
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   speechService:
     repository: lakshmilavanya2001/insurance-chat-assistant
     tag: speech-service
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   userManagement:
     repository: lakshmilavanya2001/insurance-chat-assistant
     tag: user-management
-    pullPolicy: Always
+    pullPolicy: AIfNotPresent
   notificationAgent:
     repository: lakshmilavanya2001/insurance-chat-assistant
     tag: notification-agent
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   textToSqlAgent:
     repository: lakshmilavanya2001/insurance-chat-assistant
     tag: text-to-sql-agent
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
 
   # Third-party images (from public registries)
   nginx:
